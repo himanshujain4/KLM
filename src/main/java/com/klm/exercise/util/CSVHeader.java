@@ -1,39 +1,50 @@
 package com.klm.exercise.util;
 
 public enum CSVHeader {
+
 	/**
 	 * Date Header
 	 */
-	DATE,
+	DATE("Date"),
 
 	/**
 	 * Open Price Header
 	 */
-	OPEN,
+	OPEN("Open"),
 
 	/**
 	 * High Price Header
 	 */
-	HIGH,
+	HIGH("High"),
 
 	/**
 	 * Low Price Header
 	 */
-	LOW,
+	LOW("Low"),
 
 	/**
 	 * Close Price Header
 	 */
-	CLOSE,
+	CLOSE("Close"),
 
 	/**
 	 * Adj. Close Price Header
 	 */
-	ADJCLOSE,
+	ADJCLOSE("Adj Close"),
 
 	/**
 	 * Volume Header
 	 */
-	VOLUME
+	VOLUME("Volume");
+
+	private String header;
+
+	CSVHeader(String header) {
+		this.header = header;
+	}
+
+	public String getHeader() {
+		return header;
+	}
 
 }

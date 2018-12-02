@@ -10,9 +10,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.klm.exercise.controller.StockPriceController;
 import com.klm.exercise.dao.StockPriceDAO;
 import com.klm.exercise.model.StockPrice;
 import com.klm.exercise.util.CSVReader;
@@ -20,6 +23,7 @@ import com.klm.exercise.util.DateHelper;
 
 @Service
 public class StockPriceService {
+	private static final Logger LOGGER = LoggerFactory.getLogger(StockPriceService.class);
 	
 	@Autowired
 	private CSVReader cSVReader;
@@ -38,6 +42,7 @@ public class StockPriceService {
 	 * @throws IOException
 	 */
 	public Map<String, BigDecimal> getClosePriceForEntireTimeSpanOfFile() throws IOException {
+		LOGGER.info("Entering service method to get the close price of stock for entire csv file data");
 		readAndSaveCSVFile();
 		Map<String, BigDecimal> dateClosePriceMap = new HashMap<>();
 		List<StockPrice> stockPriceList = stockPriceDAO.getClosePriceForEntireTimeSpanOfFile();
@@ -58,6 +63,7 @@ public class StockPriceService {
 	 * @throws IOException
 	 */
 	public Map<String, BigDecimal> getClosePriceBetweenDates(String fromDateStr, String toDateStr) throws IOException {
+		LOGGER.info("Entering service method to get the close price of stock from " + fromDateStr + " to" + toDateStr);
 		Map<String, BigDecimal> dateClosePriceMap = new HashMap<>();
 		readAndSaveCSVFile();
 		LocalDate fromDate = dateHelper.getFormattedDate(fromDateStr);
@@ -80,6 +86,7 @@ public class StockPriceService {
 	 * @throws IOException
 	 */
 	public Map<String, BigDecimal> getAverageClosePriceWithinYear(String yr) throws IOException {
+		LOGGER.info("Entering service method to get the average close price of stock for year " + yr);
 		Map<String, BigDecimal> yearAvgClosePriceMap = new HashMap<>();
 		readAndSaveCSVFile();
 		Year year = dateHelper.getYear(yr);
@@ -106,6 +113,7 @@ public class StockPriceService {
 	 * @throws IOException
 	 */
 	public Map<String, BigDecimal> getAverageClosePriceWithinMonthOfYear(String year, String month) throws IOException {
+		LOGGER.info("Entering service method to get the average close price of stock for month  " + month + "of the year" + year);
 		Map<String, BigDecimal> yearMonthAvgClosePriceMap = new HashMap<>();
 		readAndSaveCSVFile();
 		YearMonth yearMonth = dateHelper.getYearMonth(year, month);
@@ -131,6 +139,7 @@ public class StockPriceService {
 	 * @throws IOException
 	 */
 	public Map<String, BigDecimal> getClosePriceForDate(String year, String month, String day) throws IOException {
+		LOGGER.info("Entering service method to get the close price of stock for date " + day + "-" + month + "-" + year);
 		Map<String, BigDecimal> dateClosePriceMap = new HashMap<>();
 		readAndSaveCSVFile();
 		LocalDate date = dateHelper.getDate(year, month, day);
@@ -147,6 +156,7 @@ public class StockPriceService {
 	 * @throws IOException
 	 */
 	public void readAndSaveCSVFile() throws IOException {
+		LOGGER.info("Entering service method to read and save the CSV file");
 		List<StockPrice> stockPriceList = cSVReader.getDataFromCSVFile();
 		stockPriceDAO.save(stockPriceList);
 	}

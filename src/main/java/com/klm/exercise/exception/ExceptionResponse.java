@@ -1,7 +1,5 @@
 package com.klm.exercise.exception;
 
-import java.time.LocalDate;
-
 public class ExceptionResponse {
 	private String date;
 	private String message;

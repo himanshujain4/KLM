@@ -14,15 +14,20 @@ import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import com.klm.exercise.exception.RecordNotFoundException;
 import com.klm.exercise.model.StockPrice;
+import com.klm.exercise.service.StockPriceService;
 import com.klm.exercise.util.Constants;
 
 @Repository
 @Transactional
 public class StockPriceDAO {
+	private static final Logger LOGGER = LoggerFactory.getLogger(StockPriceDAO.class);
 
 	@Autowired
 	private SessionFactory sessionFactory;
@@ -36,16 +41,21 @@ public class StockPriceDAO {
 	 */
 	@SuppressWarnings("unchecked")
 	public List<BigDecimal> getClosePriceBetweenDates(LocalDate fromDate, LocalDate toDate) {
+		LOGGER.info("Entering dao method to get the close price of stock from " + fromDate + " to" + toDate);
 		List<BigDecimal> list = new ArrayList<>();
 		Session session = null;
 		if (null != sessionFactory) {
-			session = sessionFactory.getCurrentSession();
+			session = sessionFactory.openSession();
 		}
 		if (null != session) {
 			Criteria criteria = session.createCriteria(StockPrice.class);
 			criteria.setProjection(Projections.property(Constants.CLOSE_PRICE_ATTRIBUTE));
 			criteria.add(Restrictions.between(Constants.DATE_ATTRIBUTE, fromDate, toDate));
 			list = criteria.list();
+			session.close();
+			if (CollectionUtils.isEmpty(list)) {
+				throw new RecordNotFoundException(Constants.RECORD_NOT_FOUND_FOR_MENTIONED_DATA);
+			}
 		}
 		return list;
 	}
@@ -58,17 +68,21 @@ public class StockPriceDAO {
 	 */
 	@SuppressWarnings("unchecked")
 	public BigDecimal getClosePriceForDate(LocalDate date) {
+		LOGGER.info("Entering dao method to get the close price of stock for date " + date);
 		Session session = null;
 		if (null != sessionFactory) {
-			session = sessionFactory.getCurrentSession();
+			session = sessionFactory.openSession();
 		}
 		if (null != session) {
 			Criteria criteria = session.createCriteria(StockPrice.class);
 			criteria.setProjection(Projections.property(Constants.CLOSE_PRICE_ATTRIBUTE));
 			criteria.add(Restrictions.eq(Constants.DATE_ATTRIBUTE, date));
 			List<BigDecimal> list = criteria.list();
+			session.close();
 			if (CollectionUtils.isNotEmpty(list)) {
 				return (BigDecimal) list.get(0);
+			} else {
+				throw new RecordNotFoundException(Constants.RECORD_NOT_FOUND_FOR_MENTIONED_DATA);
 			}
 		}
 		return null;
@@ -82,14 +96,19 @@ public class StockPriceDAO {
 	 */
 	@SuppressWarnings("unchecked")
 	public List<StockPrice> getClosePriceForEntireTimeSpanOfFile() {
+		LOGGER.info("Entering dao method to get the close price of stock for entire csv file data");
 		List<StockPrice> list = new ArrayList<>();
 		Session session = null;
 		if (null != sessionFactory) {
-			session = sessionFactory.getCurrentSession();
+			session = sessionFactory.openSession();
 		}
 		if (null != session) {
 			Criteria criteria = session.createCriteria(StockPrice.class);
 			list = criteria.list();
+			session.close();
+			if (CollectionUtils.isEmpty(list)) {
+				throw new RecordNotFoundException(Constants.RECORD_NOT_FOUND_FOR_MENTIONED_DATA);
+			}
 		}
 		return list;
 	}
@@ -103,15 +122,20 @@ public class StockPriceDAO {
 	 */
 	@SuppressWarnings("unchecked")
 	public List<StockPrice> getStockPriceBetweenDates(LocalDate fromDate, LocalDate toDate) {
+		LOGGER.info("Entering dao method to get the stock price from " + fromDate + " to" + toDate);
 		List<StockPrice> list = new ArrayList<>();
 		Session session = null;
 		if (null != sessionFactory) {
-			session = sessionFactory.getCurrentSession();
+			session = sessionFactory.openSession();
 		}
 		if (null != session) {
 			Criteria criteria = session.createCriteria(StockPrice.class);
 			criteria.add(Restrictions.between(Constants.DATE_ATTRIBUTE, fromDate, toDate));
 			list = criteria.list();
+			session.close();
+			if (CollectionUtils.isEmpty(list)) {
+				throw new RecordNotFoundException(Constants.RECORD_NOT_FOUND_FOR_MENTIONED_DATA);
+			}
 		}
 		return list;
 	}
@@ -122,9 +146,10 @@ public class StockPriceDAO {
 	 * @param stockPriceList
 	 */
 	public void save(List<StockPrice> stockPriceList) {
+		LOGGER.info("Entering dao method to save the csv data iinto DB");
 		Session session = null;
 		if (null != sessionFactory) {
-			session = sessionFactory.getCurrentSession();
+			session = sessionFactory.openSession();
 		}
 		if (null != session) {
 			Transaction transaction = session.beginTransaction();
@@ -136,6 +161,7 @@ public class StockPriceDAO {
 				}
 			}
 			transaction.commit();
+			session.close();
 		}
 	}
 

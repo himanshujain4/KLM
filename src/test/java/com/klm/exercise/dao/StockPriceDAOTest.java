@@ -9,7 +9,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.collections4.CollectionUtils;
 import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -21,16 +20,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.mockito.runners.MockitoJUnitRunner;
 
 import com.klm.exercise.model.StockPrice;
 import com.klm.exercise.util.Constants;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest
+@RunWith(MockitoJUnitRunner.class)
+//@SpringBootTest
 public class StockPriceDAOTest {
 
 	@Mock
@@ -62,7 +59,7 @@ public class StockPriceDAOTest {
 		list.add(new BigDecimal("1"));
 		list.add(new BigDecimal("2"));
 
-		when(sessionFactory.getCurrentSession()).thenReturn(session);
+		when(sessionFactory.openSession()).thenReturn(session);
 		when(session.createCriteria(StockPrice.class)).thenReturn(criteria);
 		when(criteria.setProjection(Projections.property(Constants.CLOSE_PRICE_ATTRIBUTE))).thenReturn(criteria);
 		when(criteria.add(Restrictions.between(Constants.DATE_ATTRIBUTE, fromDate, toDate))).thenReturn(criteria);
@@ -80,7 +77,7 @@ public class StockPriceDAOTest {
 		list.add(new BigDecimal("2"));
 		list.add(new BigDecimal("1"));
 
-		when(sessionFactory.getCurrentSession()).thenReturn(session);
+		when(sessionFactory.openSession()).thenReturn(session);
 		when(session.createCriteria(StockPrice.class)).thenReturn(criteria);
 		when(criteria.setProjection(Projections.property(Constants.CLOSE_PRICE_ATTRIBUTE))).thenReturn(criteria);
 		when(criteria.add(Restrictions.eq(Constants.DATE_ATTRIBUTE, date))).thenReturn(criteria);
@@ -102,7 +99,7 @@ public class StockPriceDAOTest {
 		list.add(stockPrice1);
 		list.add(stockPrice2);
 		
-		when(sessionFactory.getCurrentSession()).thenReturn(session);
+		when(sessionFactory.openSession()).thenReturn(session);
 		when(session.beginTransaction()).thenReturn(transaction);
 		when(session.save(stockPrice2)).thenReturn("2");
 		stockPriceDAO.save(list);
@@ -120,7 +117,7 @@ public class StockPriceDAOTest {
 		list.add(stockPrice1);
 		list.add(stockPrice2);
 		
-		when(sessionFactory.getCurrentSession()).thenReturn(session);
+		when(sessionFactory.openSession()).thenReturn(session);
 		when(session.createCriteria(StockPrice.class)).thenReturn(criteria);
 		when(criteria.list()).thenReturn(list);
 
@@ -144,7 +141,7 @@ public class StockPriceDAOTest {
 		list.add(stockPrice1);
 		list.add(stockPrice2);
 		
-		when(sessionFactory.getCurrentSession()).thenReturn(session);
+		when(sessionFactory.openSession()).thenReturn(session);
 		when(session.createCriteria(StockPrice.class)).thenReturn(criteria);
 		when(criteria.add(Restrictions.between(Constants.DATE_ATTRIBUTE, fromDate, toDate))).thenReturn(criteria);
 		when(criteria.list()).thenReturn(list);

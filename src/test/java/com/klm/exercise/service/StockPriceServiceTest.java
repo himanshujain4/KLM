@@ -18,16 +18,14 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.mockito.runners.MockitoJUnitRunner;
 
 import com.klm.exercise.dao.StockPriceDAO;
 import com.klm.exercise.model.StockPrice;
 import com.klm.exercise.util.CSVReader;
 import com.klm.exercise.util.DateHelper;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest
+@RunWith(MockitoJUnitRunner.class)
 public class StockPriceServiceTest {
 	@Mock
 	private CSVReader cSVReader;
