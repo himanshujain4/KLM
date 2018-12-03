@@ -8,15 +8,13 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
-import com.klm.exercise.controller.StockPriceController;
-
 @SpringBootApplication
-public class KlmExerciseApplication {
-	private static final Logger LOGGER = LoggerFactory.getLogger(KlmExerciseApplication.class);
+public class StockPriceApplication {
+	private static final Logger LOGGER = LoggerFactory.getLogger(StockPriceApplication.class);
 	
 	public static void main(String[] args) {
-		LOGGER.info("Entring into application KlmExerciseApplication");
-		SpringApplication.run(KlmExerciseApplication.class, args);
+		LOGGER.info("Entring into application StockPriceApplication");
+		SpringApplication.run(StockPriceApplication.class, args);
 	}
 	
 	@Bean

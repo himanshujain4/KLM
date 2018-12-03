@@ -12,6 +12,7 @@ import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
+import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.slf4j.Logger;
@@ -21,7 +22,6 @@ import org.springframework.stereotype.Repository;
 
 import com.klm.exercise.exception.RecordNotFoundException;
 import com.klm.exercise.model.StockPrice;
-import com.klm.exercise.service.StockPriceService;
 import com.klm.exercise.util.Constants;
 
 @Repository
@@ -88,30 +88,6 @@ public class StockPriceDAO {
 		return null;
 	}
 
-	/**
-	 * This function returns the list of stock price object for entire csv file
-	 * data.
-	 * 
-	 * @return
-	 */
-	@SuppressWarnings("unchecked")
-	public List<StockPrice> getClosePriceForEntireTimeSpanOfFile() {
-		LOGGER.info("Entering dao method to get the close price of stock for entire csv file data");
-		List<StockPrice> list = new ArrayList<>();
-		Session session = null;
-		if (null != sessionFactory) {
-			session = sessionFactory.openSession();
-		}
-		if (null != session) {
-			Criteria criteria = session.createCriteria(StockPrice.class);
-			list = criteria.list();
-			session.close();
-			if (CollectionUtils.isEmpty(list)) {
-				throw new RecordNotFoundException(Constants.RECORD_NOT_FOUND_FOR_MENTIONED_DATA);
-			}
-		}
-		return list;
-	}
 
 	/**
 	 * This function returns the list of stock price object between two dates.
@@ -131,6 +107,7 @@ public class StockPriceDAO {
 		if (null != session) {
 			Criteria criteria = session.createCriteria(StockPrice.class);
 			criteria.add(Restrictions.between(Constants.DATE_ATTRIBUTE, fromDate, toDate));
+			criteria.addOrder(Order.asc(Constants.DATE_ATTRIBUTE));
 			list = criteria.list();
 			session.close();
 			if (CollectionUtils.isEmpty(list)) {

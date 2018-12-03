@@ -45,45 +45,57 @@ public class StockPriceControllerTest {
 	}
 
 	@Test
-	public void testGetClosePriceForEntireTimeSpanOfFile() throws Exception {
-		mockMvc.perform(get("/getClosePriceForEntireTimeSpanOfFile")).andExpect(status().isOk())
+	public void testGetCloseRateOverTime_Year() throws Exception {
+		mockMvc.perform(get("/getCloseRateOverTime/time?year=2016")).andExpect(status().isOk())
 				.andExpect(content().contentType(CONTENT_TYPE))
-				.andExpect(jsonPath("$.2000-05-31", Matchers.is(26.68725600)))
-				.andExpect(jsonPath("$.2000-06-02", Matchers.is(26.58421700)));
-		;
+				.andExpect(jsonPath("$.2016-07-08", Matchers.is(13.09000000)))
+				.andExpect(jsonPath("$.2016-11-22", Matchers.is(11.89000000)));
 	}
 
 	@Test
-	public void testGetClosePriceBetweenDates() throws Exception {
-		mockMvc.perform(get("/getClosePriceBetweenDates/{fromDate}/{toDate}", "01-06-2000", "06-06-2001"))
-				.andExpect(status().isOk()).andExpect(content().contentType(CONTENT_TYPE))
-				.andExpect(jsonPath("$.2001-06-05", Matchers.is(27.95807800)))
-				.andExpect(jsonPath("$.2000-06-02", Matchers.is(26.58421700)));
-		;
-	}
-
-	@Test
-	public void testGetAverageClosePriceWithinYear() throws Exception {
-		mockMvc.perform(get("/getAverageClosePriceWithinYear/{year}", "2001")).andExpect(status().isOk())
+	public void testGetCloseRateOverTime_YearMonth() throws Exception {
+		mockMvc.perform(get("/getCloseRateOverTime/time?year=2016&month=04")).andExpect(status().isOk())
 				.andExpect(content().contentType(CONTENT_TYPE))
-				.andExpect(jsonPath("$.2001", Matchers.is(27.7176520000)));
-		;
+				.andExpect(jsonPath("$.2016-04-22", Matchers.is(13.61000000)))
+				.andExpect(jsonPath("$.2016-04-19", Matchers.is(13.44000000)));
 	}
 
 	@Test
-	public void testGetAverageClosePriceWithinMonthOfYear() throws Exception {
-		mockMvc.perform(get("/getAverageClosePriceWithinMonthOfYear/{year}/{month}", "2001", "06"))
-				.andExpect(status().isOk()).andExpect(content().contentType(CONTENT_TYPE))
-				.andExpect(jsonPath("$.2001/06", Matchers.is(27.7176520000)));
-		;
+	public void testGetCloseRateOverTime_Date() throws Exception {
+		mockMvc.perform(get("/getCloseRateOverTime/time?year=2016&month=04&day=22")).andExpect(status().isOk())
+				.andExpect(content().contentType(CONTENT_TYPE))
+				.andExpect(jsonPath("$.2016-04-22", Matchers.is(13.61000000)));
 	}
 
 	@Test
-	public void testGetClosePriceForDate() throws Exception {
-		mockMvc.perform(get("/getClosePriceForDate/{year}/{month}/{day}", "2001", "06", "05"))
+	public void testGetCloseRateOverTime_Exception() throws Exception {
+		mockMvc.perform(get("/getCloseRateOverTime/time?year")).andExpect(status().is5xxServerError());
+	}
+
+	@Test
+	public void testGetAverageCloseRateOverPeriod_Year() throws Exception {
+		mockMvc.perform(get("/getAverageCloseRateOverPeriod/period?year=2016")).andExpect(status().isOk())
+				.andExpect(content().contentType(CONTENT_TYPE))
+				.andExpect(jsonPath("$.2016", Matchers.is(12.6310317460)));
+	}
+
+	@Test
+	public void testGetAverageCloseRateOverPeriod_YearMonth() throws Exception {
+		mockMvc.perform(get("/getAverageCloseRateOverPeriod/period?year=2016&month=4")).andExpect(status().isOk())
+				.andExpect(content().contentType(CONTENT_TYPE))
+				.andExpect(jsonPath("$.2016-4", Matchers.is(13.2071428571)));
+	}
+
+	@Test
+	public void testGetAverageCloseRateOverPeriod_Date() throws Exception {
+		mockMvc.perform(get("/getAverageCloseRateOverPeriod/period?year=2016&month=04&day=22"))
 				.andExpect(status().isOk()).andExpect(content().contentType(CONTENT_TYPE))
-				.andExpect(jsonPath("$.2001/06/05", Matchers.is(27.95807800)));
-		;
+				.andExpect(jsonPath("$.2016-04-22", Matchers.is(13.61000000)));
+	}
+
+	@Test
+	public void testGetAverageCloseRateOverPeriod_Exception() throws Exception {
+		mockMvc.perform(get("/getAverageCloseRateOverPeriod/period?year")).andExpect(status().is5xxServerError());
 	}
 
 	@Test

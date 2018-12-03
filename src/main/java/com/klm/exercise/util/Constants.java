@@ -3,7 +3,7 @@ package com.klm.exercise.util;
 public class Constants {
 	
 	/** Date format for request */
-	public static final String DATE_FORMAT = "dd-MM-yyyy";
+	public static final String DATE_FORMAT = "yyyy-MM-dd";
 	
 	/** Close Price attribute for StockPrice Model */
 	public static final String CLOSE_PRICE_ATTRIBUTE = "closePrice";
@@ -27,7 +27,7 @@ public class Constants {
 	public static final String DATE_TIME_EXCEPTION_MESSAGE = "- Please provide valid formate for date/time.";
 
 	/** IllegalArgumentException message */
-	public static final String ILLEGAL_ARGU_EXCEPTION_MESSAGE = "- Some illegal arguments in the request. Please try later.";
+	public static final String ILLEGAL_ARGU_EXCEPTION_MESSAGE = "- Some illegal arguments in the request. Please try again.";
 
 	/** IOException message */
 	public static final String IO_EXCEPTION_MESSAGE = "- Unable to read the csv file.";
@@ -37,4 +37,7 @@ public class Constants {
 
 	/** ArithmeticException message */
 	public static final String ARTHIMATIC_EXCEPTION_MESSAGE = "- Arthimatic exception occured. There may be some bad data in the csv file.";
+
+	/**String dash	 */
+	public static final String DASH = "-";
 }

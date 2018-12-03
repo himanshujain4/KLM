@@ -106,27 +106,6 @@ public class StockPriceDAOTest {
 	}
 	
 	@Test
-	public void testGetClosePriceForEntireTimeSpanOfFile() {
-		List<StockPrice> list = new ArrayList<>();
-		StockPrice stockPrice1 = new StockPrice();
-		stockPrice1.setClosePrice(new BigDecimal("2.04"));
-		
-		StockPrice stockPrice2 = new StockPrice();
-		stockPrice2.setClosePrice(new BigDecimal("5"));
-		
-		list.add(stockPrice1);
-		list.add(stockPrice2);
-		
-		when(sessionFactory.openSession()).thenReturn(session);
-		when(session.createCriteria(StockPrice.class)).thenReturn(criteria);
-		when(criteria.list()).thenReturn(list);
-
-		list = stockPriceDAO.getClosePriceForEntireTimeSpanOfFile();
-		assertEquals(2, list.size());
-		assertTrue(new BigDecimal("2.04").equals(list.get(0).getClosePrice()));
-	}
-	
-	@Test
 	public void testGetStockPriceBetweenDates() {
 		LocalDate fromDate = LocalDate.of(2001, 01, 05);
 		LocalDate toDate = LocalDate.of(2002, 12, 10);

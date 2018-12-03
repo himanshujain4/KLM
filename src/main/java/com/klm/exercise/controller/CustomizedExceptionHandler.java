@@ -19,7 +19,6 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 import com.klm.exercise.exception.ExceptionResponse;
 import com.klm.exercise.exception.RecordNotFoundException;
-import com.klm.exercise.util.CSVReader;
 import com.klm.exercise.util.Constants;
 
 @ControllerAdvice

@@ -14,17 +14,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
-import com.klm.exercise.controller.StockPriceController;
 import com.klm.exercise.dao.StockPriceDAO;
 import com.klm.exercise.model.StockPrice;
 import com.klm.exercise.util.CSVReader;
+import com.klm.exercise.util.Constants;
 import com.klm.exercise.util.DateHelper;
 
 @Service
 public class StockPriceService {
 	private static final Logger LOGGER = LoggerFactory.getLogger(StockPriceService.class);
-	
+
 	@Autowired
 	private CSVReader cSVReader;
 
@@ -35,48 +36,154 @@ public class StockPriceService {
 	private DateHelper dateHelper;
 
 	/**
-	 * This function returns the close price of stock for entire csv file data.
-	 * Returns a map having date as key and close price as value.
+	 * This function checks time parameters present in the request and return a
+	 * map having time as key and close price as value.
 	 * 
+	 * @param year
+	 * @param month
+	 * @param day
 	 * @return
 	 * @throws IOException
 	 */
-	public Map<String, BigDecimal> getClosePriceForEntireTimeSpanOfFile() throws IOException {
-		LOGGER.info("Entering service method to get the close price of stock for entire csv file data");
-		readAndSaveCSVFile();
-		Map<String, BigDecimal> dateClosePriceMap = new HashMap<>();
-		List<StockPrice> stockPriceList = stockPriceDAO.getClosePriceForEntireTimeSpanOfFile();
-		for (StockPrice stockPrice : stockPriceList) {
-			dateClosePriceMap.put(stockPrice.getDate().toString(), stockPrice.getClosePrice());
+	public Map<String, BigDecimal> getCloseRateOverTime(String year, String month, String day) throws IOException {
+		LOGGER.info("Entering service method to get the close price of stock over time");
+		Map<String, BigDecimal> map = new HashMap<>();
+		if (!StringUtils.isEmpty(year)) {
+			if (!StringUtils.isEmpty(month)) {
+				if (!StringUtils.isEmpty(day)) {
+					map = getClosePriceForDate(year, month, day);
+				} else {
+					map = getClosePriceForMonthOfYear(year, month);
+				}
+			} else {
+				map = getClosePriceForYear(year);
+			}
+		} else {
+			throw new IllegalArgumentException(Constants.ILLEGAL_ARGU_EXCEPTION_MESSAGE);
 		}
+		return map;
+	}
+
+	/**
+	 * This function checks period parameters present in the request and return
+	 * a map having period as key and average close price as value.
+	 * 
+	 * @param year
+	 * @param month
+	 * @param day
+	 * @return
+	 * @throws IOException
+	 */
+	public Map<String, BigDecimal> getAverageCloseRateOverPeriod(String year, String month, String day)
+			throws IOException {
+		LOGGER.info("Entering service method to get the average close price of stock over period");
+		Map<String, BigDecimal> map = new HashMap<>();
+		if (!StringUtils.isEmpty(year)) {
+			if (!StringUtils.isEmpty(month)) {
+				if (!StringUtils.isEmpty(day)) {
+					map = getClosePriceForDate(year, month, day);
+				} else {
+					map = getAverageClosePriceWithinMonthOfYear(year, month);
+				}
+			} else {
+				map = getAverageClosePriceWithinYear(year);
+			}
+		} else {
+			throw new IllegalArgumentException(Constants.ILLEGAL_ARGU_EXCEPTION_MESSAGE);
+		}
+		return map;
+	}
+
+	/**
+	 * This function return the close price of stock for a particular date.
+	 * Returns a map having year-month-day as key and close price as value.
+	 * 
+	 * @param year
+	 * @param month
+	 * @param day
+	 * @return
+	 * @throws IOException
+	 */
+	private Map<String, BigDecimal> getClosePriceForDate(String year, String month, String day) throws IOException {
+		LOGGER.info(
+				"Entering service method to get the close price of stock for date " + day + "-" + month + "-" + year);
+		Map<String, BigDecimal> dateClosePriceMap = new HashMap<>();
+		readAndSaveCSVFile();
+		LocalDate date = dateHelper.getDate(year, month, day);
+		BigDecimal requiredStockPrice = stockPriceDAO.getClosePriceForDate(date);
+		dateClosePriceMap.put(year + Constants.DASH + month + Constants.DASH + day, requiredStockPrice);
 		return dateClosePriceMap;
+	}
+
+	/**
+	 * This function returns the close price of stock for a month of a year.
+	 * Returns a map having year-month as key and close price as value.
+	 * 
+	 * @param year
+	 * @param month
+	 * @return
+	 * @throws IOException
+	 */
+	private Map<String, BigDecimal> getClosePriceForMonthOfYear(String year, String month) throws IOException {
+		LOGGER.info(
+				"Entering service method to get the close price of stock for month  " + month + "of the year" + year);
+		Map<String, BigDecimal> yearMonthClosePriceMap = new HashMap<>();
+		readAndSaveCSVFile();
+		YearMonth yearMonth = dateHelper.getYearMonth(year, month);
+		List<StockPrice> stockPriceList = stockPriceDAO.getStockPriceBetweenDates(yearMonth.atDay(1),
+				yearMonth.atEndOfMonth());
+		for (StockPrice stockPrice : stockPriceList) {
+			yearMonthClosePriceMap.put(stockPrice.getDate().toString(), stockPrice.getClosePrice());
+		}
+		return yearMonthClosePriceMap;
+	}
+
+	/**
+	 * This function returns the close price of stock for a year. Returns a map
+	 * having year as key and close price as value.
+	 * 
+	 * @param year
+	 * @return
+	 * @throws IOException
+	 */
+	private Map<String, BigDecimal> getClosePriceForYear(String yr) throws IOException {
+		LOGGER.info("Entering service method to get the close price of stock for year " + yr);
+		Map<String, BigDecimal> yearClosePriceMap = new HashMap<>();
+		readAndSaveCSVFile();
+		Year year = dateHelper.getYear(yr);
+		List<StockPrice> stockPriceList = stockPriceDAO.getStockPriceBetweenDates(year.atDay(1),
+				year.atMonth(12).atEndOfMonth());
+		for (StockPrice stockPrice : stockPriceList) {
+			yearClosePriceMap.put(stockPrice.getDate().toString(), stockPrice.getClosePrice());
+		}
+		return yearClosePriceMap;
 
 	}
 
 	/**
-	 * This function returns the close price of stock within two
-	 * dates. Returns a map having date as key and close price as value.
+	 * This function returns the average close price of stock within a month of
+	 * a year. Returns a map having year-month as key and avg close price as
+	 * value.
 	 * 
-	 * @param fromDateStr
-	 * @param toDateStr
+	 * @param year
+	 * @param month
 	 * @return
 	 * @throws IOException
 	 */
-	public Map<String, BigDecimal> getClosePriceBetweenDates(String fromDateStr, String toDateStr) throws IOException {
-		LOGGER.info("Entering service method to get the close price of stock from " + fromDateStr + " to" + toDateStr);
-		Map<String, BigDecimal> dateClosePriceMap = new HashMap<>();
+	private Map<String, BigDecimal> getAverageClosePriceWithinMonthOfYear(String year, String month)
+			throws IOException {
+		LOGGER.info("Entering service method to get the average close price of stock for month  " + month
+				+ "of the year" + year);
+		Map<String, BigDecimal> yearMonthAvgClosePriceMap = new HashMap<>();
 		readAndSaveCSVFile();
-		LocalDate fromDate = dateHelper.getFormattedDate(fromDateStr);
-		LocalDate toDate = dateHelper.getFormattedDate(toDateStr);
-
-		List<StockPrice> stockPriceList = stockPriceDAO.getStockPriceBetweenDates(fromDate, toDate);
-		for (StockPrice stockPrice : stockPriceList) {
-			dateClosePriceMap.put(stockPrice.getDate().toString(), stockPrice.getClosePrice());
-		}
-		return dateClosePriceMap;
-
+		YearMonth yearMonth = dateHelper.getYearMonth(year, month);
+		List<BigDecimal> closePriceList = stockPriceDAO.getClosePriceBetweenDates(yearMonth.atDay(1),
+				yearMonth.atEndOfMonth());
+		BigDecimal mean = getAvegareClosePrice(closePriceList);
+		yearMonthAvgClosePriceMap.put(year + Constants.DASH + month, mean);
+		return yearMonthAvgClosePriceMap;
 	}
-	
+
 	/**
 	 * This function returns the average close price of stock within a year.
 	 * Returns a map having year as key and avg close price as value.
@@ -85,77 +192,39 @@ public class StockPriceService {
 	 * @return
 	 * @throws IOException
 	 */
-	public Map<String, BigDecimal> getAverageClosePriceWithinYear(String yr) throws IOException {
+	private Map<String, BigDecimal> getAverageClosePriceWithinYear(String yr) throws IOException {
 		LOGGER.info("Entering service method to get the average close price of stock for year " + yr);
 		Map<String, BigDecimal> yearAvgClosePriceMap = new HashMap<>();
 		readAndSaveCSVFile();
 		Year year = dateHelper.getYear(yr);
-
-		List<BigDecimal> closePriceList = stockPriceDAO.getClosePriceBetweenDates(year.atDay(1), year.atMonth(12).atEndOfMonth());
-
-		BigDecimal[] totalWithCount = closePriceList.stream().filter(bd -> bd != null)
-				.map(bd -> new BigDecimal[] { bd, BigDecimal.ONE })
-				.reduce((a, b) -> new BigDecimal[] { a[0].add(b[0]), a[1].add(BigDecimal.ONE) }).get();
-		BigDecimal mean = totalWithCount[0].divide(totalWithCount[1], 10, RoundingMode.HALF_UP);
+		List<BigDecimal> closePriceList = stockPriceDAO.getClosePriceBetweenDates(year.atDay(1),
+				year.atMonth(12).atEndOfMonth());
+		BigDecimal mean = getAvegareClosePrice(closePriceList);
 		yearAvgClosePriceMap.put(yr, mean);
 		return yearAvgClosePriceMap;
 
 	}
-	
+
 	/**
-	 * This function returns the average close price of stock within a month of
-	 * a year. Returns a map having year/month as key and avg close price as
-	 * value.
+	 * This function calculate the average close price of the list.
 	 * 
-	 * @param year
-	 * @param month
+	 * @param closePriceList
 	 * @return
-	 * @throws IOException
 	 */
-	public Map<String, BigDecimal> getAverageClosePriceWithinMonthOfYear(String year, String month) throws IOException {
-		LOGGER.info("Entering service method to get the average close price of stock for month  " + month + "of the year" + year);
-		Map<String, BigDecimal> yearMonthAvgClosePriceMap = new HashMap<>();
-		readAndSaveCSVFile();
-		YearMonth yearMonth = dateHelper.getYearMonth(year, month);
-
-		List<BigDecimal> closePriceList = stockPriceDAO.getClosePriceBetweenDates(yearMonth.atDay(1), yearMonth.atEndOfMonth());
-
+	private BigDecimal getAvegareClosePrice(List<BigDecimal> closePriceList) {
 		BigDecimal[] totalWithCount = closePriceList.stream().filter(bd -> bd != null)
 				.map(bd -> new BigDecimal[] { bd, BigDecimal.ONE })
 				.reduce((a, b) -> new BigDecimal[] { a[0].add(b[0]), a[1].add(BigDecimal.ONE) }).get();
 		BigDecimal mean = totalWithCount[0].divide(totalWithCount[1], 10, RoundingMode.HALF_UP);
-		yearMonthAvgClosePriceMap.put(year + "/" + month, mean);
-		return yearMonthAvgClosePriceMap;
+		return mean;
 	}
-	
-	/**
-	 * This function return the close price of stock for a particular date.
-	 * Returns a map having year/month/day as key and close price as value.
-	 * 
-	 * @param year
-	 * @param month
-	 * @param day
-	 * @return
-	 * @throws IOException
-	 */
-	public Map<String, BigDecimal> getClosePriceForDate(String year, String month, String day) throws IOException {
-		LOGGER.info("Entering service method to get the close price of stock for date " + day + "-" + month + "-" + year);
-		Map<String, BigDecimal> dateClosePriceMap = new HashMap<>();
-		readAndSaveCSVFile();
-		LocalDate date = dateHelper.getDate(year, month, day);
 
-		BigDecimal requiredStockPrice = stockPriceDAO.getClosePriceForDate(date);
-
-		dateClosePriceMap.put(year + "/" + month + "/" + day, requiredStockPrice);
-		return dateClosePriceMap;
-	}
-	
 	/**
 	 * This function reads the data of csv file and save the data in DB.
 	 * 
 	 * @throws IOException
 	 */
-	public void readAndSaveCSVFile() throws IOException {
+	private void readAndSaveCSVFile() throws IOException {
 		LOGGER.info("Entering service method to read and save the CSV file");
 		List<StockPrice> stockPriceList = cSVReader.getDataFromCSVFile();
 		stockPriceDAO.save(stockPriceList);

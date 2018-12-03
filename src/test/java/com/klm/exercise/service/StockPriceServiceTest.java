@@ -3,7 +3,6 @@ package com.klm.exercise.service;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.Year;
@@ -45,75 +44,78 @@ public class StockPriceServiceTest {
 	}
 
 	@Test
-	public void testGetClosePriceForEntireTimeSpanOfFile() throws IOException {
-		LocalDate date1 = LocalDate.of(2001, 01, 05);
-		LocalDate date2 = LocalDate.of(2002, 12, 10);
+	public void testGetCloseRateOverTime_Year() throws Exception {
+		String yrStr = "2016";
+		Year year = Year.of(2016);
 
 		List<StockPrice> list = new ArrayList<>();
 		StockPrice stockPrice1 = new StockPrice();
-		stockPrice1.setDate(date1);
+		stockPrice1.setDate(year.atDay(1));
 		stockPrice1.setClosePrice(new BigDecimal("2.04"));
 		StockPrice stockPrice2 = new StockPrice();
-		stockPrice2.setDate(date2);
+		stockPrice2.setDate(year.atDay(2));
 		stockPrice2.setClosePrice(new BigDecimal("5"));
 		list.add(stockPrice1);
 		list.add(stockPrice2);
-
-		when(stockPriceDAO.getClosePriceForEntireTimeSpanOfFile()).thenReturn(list);
-
-		Map<String, BigDecimal> dateClosePriceMap = stockPriceService.getClosePriceForEntireTimeSpanOfFile();
-		assertEquals(2, dateClosePriceMap.size());
-		assertEquals(0, dateClosePriceMap.values().iterator().next().compareTo(new BigDecimal("5")));
-	}
-
-	@Test
-	public void testGetClosePriceBetweenDates() throws IOException {
-		String dateStr1 = "05-01-2001";
-		String dateStr2 = "10-12-2002";
-		LocalDate date1 = LocalDate.of(2001, 01, 05);
-		LocalDate date2 = LocalDate.of(2002, 12, 10);
-
-		List<StockPrice> list = new ArrayList<>();
-		StockPrice stockPrice1 = new StockPrice();
-		stockPrice1.setDate(date1);
-		stockPrice1.setClosePrice(new BigDecimal("2.04"));
-		StockPrice stockPrice2 = new StockPrice();
-		stockPrice2.setDate(date2);
-		stockPrice2.setClosePrice(new BigDecimal("5"));
-		list.add(stockPrice1);
-		list.add(stockPrice2);
-
-		when(dateHelper.getFormattedDate("05-01-2001")).thenReturn(date1);
-		when(dateHelper.getFormattedDate("10-12-2002")).thenReturn(date2);
-		when(stockPriceDAO.getStockPriceBetweenDates(date1, date2)).thenReturn(list);
-
-		Map<String, BigDecimal> dateClosePriceMap = stockPriceService.getClosePriceBetweenDates(dateStr1, dateStr2);
-		assertEquals(2, dateClosePriceMap.size());
-		assertEquals(0, dateClosePriceMap.values().iterator().next().compareTo(new BigDecimal("5")));
-	}
-
-	@Test
-	public void testGetAverageClosePriceWithinYear() throws IOException {
-		String yrStr = "2001";
-		Year year = Year.of(2001);
-
-		List<BigDecimal> list = new ArrayList<>();
-		list.add(new BigDecimal("1"));
-		list.add(new BigDecimal("2"));
 
 		when(dateHelper.getYear(yrStr)).thenReturn(year);
-		when(stockPriceDAO.getClosePriceBetweenDates(year.atDay(1), year.atMonth(12).atEndOfMonth())).thenReturn(list);
+		when(stockPriceDAO.getStockPriceBetweenDates(year.atDay(1), year.atMonth(12).atEndOfMonth())).thenReturn(list);
 
-		Map<String, BigDecimal> dateClosePriceMap = stockPriceService.getAverageClosePriceWithinYear(yrStr);
-		assertEquals(1, dateClosePriceMap.size());
-		assertEquals(0, dateClosePriceMap.values().iterator().next().compareTo(new BigDecimal("1.5")));
+		Map<String, BigDecimal> dateClosePriceMap = stockPriceService.getCloseRateOverTime(yrStr, null, "");
+		assertEquals(2, dateClosePriceMap.size());
+		assertEquals(0, dateClosePriceMap.values().iterator().next().compareTo(new BigDecimal("5")));
 	}
 
 	@Test
-	public void testGetAverageClosePriceWithinMonthOfYear() throws IOException {
-		String yrStr = "2001";
-		String monStr = "10";
-		YearMonth yearMonth = YearMonth.of(2001, 10);
+	public void testGetCloseRateOverTime_YearMonth() throws Exception {
+		String yrStr = "2016";
+		String monStr = "04";
+		YearMonth yearMonth = YearMonth.of(2016, 04);
+
+		List<StockPrice> list = new ArrayList<>();
+		StockPrice stockPrice1 = new StockPrice();
+		stockPrice1.setDate(yearMonth.atDay(1));
+		stockPrice1.setClosePrice(new BigDecimal("2.04"));
+		StockPrice stockPrice2 = new StockPrice();
+		stockPrice2.setDate(yearMonth.atDay(2));
+		stockPrice2.setClosePrice(new BigDecimal("5"));
+		list.add(stockPrice1);
+		list.add(stockPrice2);
+
+		when(dateHelper.getYearMonth(yrStr, monStr)).thenReturn(yearMonth);
+		when(stockPriceDAO.getStockPriceBetweenDates(yearMonth.atDay(1), yearMonth.atEndOfMonth())).thenReturn(list);
+
+		Map<String, BigDecimal> dateClosePriceMap = stockPriceService.getCloseRateOverTime(yrStr, monStr, null);
+		assertEquals(2, dateClosePriceMap.size());
+		assertEquals(0, dateClosePriceMap.values().iterator().next().compareTo(new BigDecimal("5")));
+	}
+
+	@Test
+	public void testGetCloseRateOverTime_Date() throws Exception {
+		String yrStr = "2016";
+		String monStr = "04";
+		String dayStr = "04";
+		LocalDate date = LocalDate.of(2016, 04, 04);
+
+		BigDecimal bd = new BigDecimal("5");
+		when(dateHelper.getDate(yrStr, monStr, dayStr)).thenReturn(date);
+		when(stockPriceDAO.getClosePriceForDate(date)).thenReturn(bd);
+
+		Map<String, BigDecimal> dateClosePriceMap = stockPriceService.getCloseRateOverTime(yrStr, monStr, dayStr);
+		assertEquals(1, dateClosePriceMap.size());
+		assertEquals(0, dateClosePriceMap.values().iterator().next().compareTo(new BigDecimal("5")));
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void testGetCloseRateOverTime_Exception() throws Exception {
+		Map<String, BigDecimal> dateClosePriceMap = stockPriceService.getCloseRateOverTime(null, null, null);
+	}
+
+	@Test
+	public void testGetAverageCloseRateOverPeriod_Year() throws Exception {
+		String yrStr = "2016";
+		String monStr = "04";
+		YearMonth yearMonth = YearMonth.of(2016, 04);
 
 		List<BigDecimal> list = new ArrayList<>();
 		list.add(new BigDecimal("1"));
@@ -122,26 +124,53 @@ public class StockPriceServiceTest {
 		when(dateHelper.getYearMonth(yrStr, monStr)).thenReturn(yearMonth);
 		when(stockPriceDAO.getClosePriceBetweenDates(yearMonth.atDay(1), yearMonth.atEndOfMonth())).thenReturn(list);
 
-		Map<String, BigDecimal> dateClosePriceMap = stockPriceService.getAverageClosePriceWithinMonthOfYear(yrStr,
-				monStr);
+		Map<String, BigDecimal> dateClosePriceMap = stockPriceService.getAverageCloseRateOverPeriod(yrStr, monStr,
+				null);
 		assertEquals(1, dateClosePriceMap.size());
 		assertEquals(0, dateClosePriceMap.values().iterator().next().compareTo(new BigDecimal("1.5")));
+
 	}
 
 	@Test
-	public void testGetClosePriceForDate() throws IOException {
-		String yrStr = "2001";
-		String monStr = "10";
-		String dayStr = "25";
-		LocalDate date = LocalDate.of(2001, 10, 25);
+	public void testGetAverageCloseRateOverPeriod_YearMonth() throws Exception {
+		String yrStr = "2016";
+		String monStr = "04";
+		YearMonth yearMonth = YearMonth.of(2016, 04);
 
-		BigDecimal bd = new BigDecimal("1");
+		List<BigDecimal> list = new ArrayList<>();
+		list.add(new BigDecimal("1"));
+		list.add(new BigDecimal("2"));
 
+		when(dateHelper.getYearMonth(yrStr, monStr)).thenReturn(yearMonth);
+		when(stockPriceDAO.getClosePriceBetweenDates(yearMonth.atDay(1), yearMonth.atEndOfMonth())).thenReturn(list);
+
+		Map<String, BigDecimal> dateClosePriceMap = stockPriceService.getAverageCloseRateOverPeriod(yrStr, monStr,
+				null);
+		assertEquals(1, dateClosePriceMap.size());
+		assertEquals(0, dateClosePriceMap.values().iterator().next().compareTo(new BigDecimal("1.5")));
+
+	}
+
+	@Test
+	public void testGetAverageCloseRateOverPeriod_Date() throws Exception {
+		String yrStr = "2016";
+		String monStr = "04";
+		String dayStr = "04";
+		LocalDate date = LocalDate.of(2016, 04, 04);
+
+		BigDecimal bd = new BigDecimal("5");
 		when(dateHelper.getDate(yrStr, monStr, dayStr)).thenReturn(date);
 		when(stockPriceDAO.getClosePriceForDate(date)).thenReturn(bd);
 
-		Map<String, BigDecimal> dateClosePriceMap = stockPriceService.getClosePriceForDate(yrStr, monStr, dayStr);
+		Map<String, BigDecimal> dateClosePriceMap = stockPriceService.getAverageCloseRateOverPeriod(yrStr, monStr,
+				dayStr);
 		assertEquals(1, dateClosePriceMap.size());
-		assertEquals(0, dateClosePriceMap.values().iterator().next().compareTo(new BigDecimal("1")));
+		assertEquals(0, dateClosePriceMap.values().iterator().next().compareTo(new BigDecimal("5")));
+
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void testGetAverageCloseRateOverPeriod_Exception() throws Exception {
+		Map<String, BigDecimal> dateClosePriceMap = stockPriceService.getAverageCloseRateOverPeriod(null, null, null);
 	}
 }
